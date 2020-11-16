@@ -53,7 +53,6 @@
 #include <amd_motorware_ext/utils.h>
 #include "main_2mtr.h"
 #include "main_helper.h"
-#include "virtualspring.h"
 #include "spiapi.h"
 #include "spintac.h"
 #include <strings.h>
@@ -161,10 +160,6 @@ ST_Handle stHandle[2];
 //! \brief The SpinTAC objects
 ST_Obj st_obj[2];
 
-//! \brief The handles for the virtual spring objects
-VIRTUALSPRING_Handle springHandle[2];
-//! \brief The virtual spring objects
-VIRTUALSPRING_Obj spring[2];
 
 //! \}
 
@@ -191,10 +186,6 @@ uint32_t gAlignCount[2] = {0, 0};
 //! \name Enable Flags
 //! \brief Flags to enable/disable parts of the program
 //! \{
-
-//! \brief Set this to true to enable the virtual spring mode. One flag for each
-//! 	motor.
-bool gFlag_enableVirtualSpring[2] = {false, false};
 
 
 //! While set, the current position is stored as offset which is removed from
@@ -283,6 +274,9 @@ _iq gZeroPositionOffset[2] = {0, 0};
 //! \brief Flag to enable the index encoder offset compensation. (position=0 at the index)
 bool gEnableIndexOffsetCompensation[2] = {false,false};
 
+//! \brief last position used by the Custom software Velocity Filter
+_iq gLastPosition[2] = {0,0};
+
 //! \}
 
 
@@ -354,6 +348,7 @@ inline void spi_prepare_and_read_msg();
 inline void spi_apply_mode_commands(uint16_t *packet);
 inline void spi_apply_command_motor(uint16_t *packet);
 
+
 //Holds 2 spi packets (one to read, one to write) and a boolean to indicate which is which
 spi_SUPER_packets gSPI_packets_recv;
 spi_SUPER_packets gSPI_packets_send;
@@ -382,6 +377,28 @@ volatile bool gSPI_msg_received = false;
 
 //Indicate when to read receive packets and prepare a new one to send (asynchronously)
 volatile bool gSPI_timer = false;
+
+
+//! \brief Feedforward Iq Currents
+_iq gIqFeedforward_A[2] = {0,0};
+
+//! \brief Position gains
+_iq gKp_ApMrev[2] =  {0,0};
+
+//! \brief Velocity gains
+_iq gKd_Apkrpm[2] = {0,0};
+
+//! \brief PD+ saturation current.
+_iq gIqSat[2] = {0,0};
+
+//! \brief reference positions
+_iq gPositionRef[2] = {0,0};
+
+//! \brief reference velocities
+_iq gVelocityRef[2] = {0,0};
+
+
+
 
 void setupSPI() {
     bzero(&gSPI_packets_recv, sizeof(spi_SUPER_packets));
@@ -755,14 +772,6 @@ void main(void)
 			stHandle[mtrNum] = ST_init(
 			        &st_obj[mtrNum], sizeof(st_obj[mtrNum]));
 
-			// init virtual spring handle
-			springHandle[mtrNum] = VIRTUALSPRING_init(
-			        &spring[mtrNum], sizeof(spring[mtrNum]));
-			VIRTUALSPRING_setup(springHandle[mtrNum],
-			        10, _IQ(2.0),
-					STPOSCONV_getMRevMaximum_mrev(
-							st_obj[mtrNum].posConvHandle));
-
 		} // End of for loop
 	}
 
@@ -794,7 +803,7 @@ void main(void)
 	ST_setupPosConv_mtr1(stHandle[HAL_MTR1]);
 	ST_setupPosConv_mtr2(stHandle[HAL_MTR2]);
 
-	// set the pre-determined current and voltage feeback offset values
+	// set the pre-determined current and voltage feedback offset values
 	gOffsets_I_pu[HAL_MTR1].value[0] = _IQ(I_A_offset);
 	gOffsets_I_pu[HAL_MTR1].value[1] = _IQ(I_B_offset);
 	gOffsets_I_pu[HAL_MTR1].value[2] = _IQ(I_C_offset);
@@ -872,6 +881,7 @@ void main(void)
 	//Can be used for debugging purpose
     //GPIO_setDirection(hal.gpioHandle, GPIO_Number_57, GPIO_Direction_Output);
     //GPIO_setDirection(hal.gpioHandle, GPIO_Number_44, GPIO_Direction_Output);
+	GPIO_setDirection(hal.gpioHandle, GPIO_Number_33, GPIO_Direction_Output);
 
 	// Begin the background loop
 	for(;;)
@@ -899,7 +909,6 @@ void main(void)
 			checkErrors();
 
 			LED_run(halHandle);
-
 			// When there is an error, shut down the system to be safe
 			if (gErrors.all) {
 				gMotorVars[HAL_MTR1].Flag_enableSys = false;
@@ -934,7 +943,6 @@ void main(void)
 				// enable PWMs and set the speed reference
 				if(gMotorVars[mtrNum].Flag_Run_Identify)
 				{
-					bool vspringChanged;
 
 					// update estimator state
 					EST_updateState(estHandle[mtrNum], 0);
@@ -947,23 +955,6 @@ void main(void)
 					softwareUpdate1p6(estHandle[mtrNum], &gUserParams[mtrNum]);
 #endif
 
-					// Update status of the virtual spring
-					vspringChanged = VIRTUALSPRING_setEnabled(
-							springHandle[mtrNum],
-							gFlag_enableVirtualSpring[mtrNum]);
-					// ...and make some adjustments if it changed
-					if (vspringChanged)
-					{
-						if (VIRTUALSPRING_isEnabled(springHandle[mtrNum])) {
-							// if virtual spring mode is just activated, reset
-							// position offset
-							VIRTUALSPRING_scheduleResetOffset(
-									springHandle[mtrNum]);
-						} else {
-							// if it is just disabled, set IqRef to 0
-							gMotorVars[mtrNum].IqRef_A = 0;
-						}
-					}
 
 					// enable the PWM
 					HAL_enablePwm(halHandleMtr[mtrNum]);
@@ -1023,6 +1014,7 @@ void main(void)
 //! \brief     The main ISR that implements the motor control.
 interrupt void motor1_ISR(void)
 {
+    HAL_toggleGpio(halHandle, GPIO_Number_33);
     /* Makes the motor interrupt interruptible (the SPI interrupts are more important) */
     HAL_Obj *obj = (HAL_Obj *)halHandle;
     obj->pieHandle->PIEACK = 0xFFFF;      // Enable PIE interrupts
@@ -1126,47 +1118,39 @@ inline void generic_motor_ISR(const HAL_MtrSelect_e mtrNum)
 		_iq fbackValue;
 		_iq outMax_pu;
 
+		_iq position_mrev;
+		_iq velocity_pups;
+		_iq velocity_krpm;
+		_iq current_sat_A;
+
 		// check if the motor should be forced into encoder alignment
 		if(gMotorVars[mtrNum].Flag_enableAlignment == false)
 		{
-			// When appropriate, update the current reference.
-			// This mechanism provides the decimation for the upper level
-			// control loop.
-			if(++stCntSpeed[mtrNum]
-			              >= gUserParams[mtrNum].numCtrlTicksPerSpeedTick)
+		    /*********** PD+Feedforward controller ************/
+			// Read position and velocity
+			position_mrev = STPOSCONV_getPosition_mrev(st_obj[mtrNum].posConvHandle);
+			velocity_pups = STPOSCONV_getVelocityFiltered(st_obj[mtrNum].posConvHandle);
+			velocity_krpm = _IQmpy(velocity_pups,gSpeed_pu_to_krpm_sf[mtrNum]);
+			//PD+ controller: Iq_ref = Iq_feeforward + Kp*err_pos + Kd*err_vel
+			gMotorVars[mtrNum].IqRef_A = _IQmpy(gPositionRef[mtrNum]-position_mrev , gKp_ApMrev[mtrNum]) +
+			                             _IQmpy(gVelocityRef[mtrNum]-velocity_krpm , gKd_Apkrpm[mtrNum]) +
+			                             gIqFeedforward_A[mtrNum];
+
+			current_sat_A = gIqSat[mtrNum];
+			if (current_sat_A != 0)
 			{
-				// Reset the Speed execution counter.
-				stCntSpeed[mtrNum] = 0;
-
-				// If spring is enabled, set IqRef based on it
-				if (VIRTUALSPRING_isEnabled(springHandle[mtrNum])) {
-					VIRTUALSPRING_run(springHandle[mtrNum],
-							STPOSCONV_getPosition_mrev(
-									st_obj[mtrNum].posConvHandle));
-				    gMotorVars[mtrNum].IqRef_A =
-				            VIRTUALSPRING_getIqRef_A(springHandle[mtrNum]);
-				}
-				/*
-				 * No need to do that since gMotorVars has been updated in SPI functions
-				else {
-				    uint16_t *p_ready = packet_ready(gSPI_packets_recv);
-                    if(mtrNum == 0) {
-                        gMotorVars[0].IqRef_A = D16QN_TO_D32Q24(SPI_REG_16(p_ready, SPI_COMMAND_IQ_1), SPI_QN_IQ);
-                    } else {
-                        gMotorVars[1].IqRef_A = D16QN_TO_D32Q24(SPI_REG_16(p_ready, SPI_COMMAND_IQ_2), SPI_QN_IQ);
-                    }
-				}
-				*/
-
-				// else: do nothing. This allows setting IqRef_A from a GUI or
-				// debug session.
-
-
-				gIdq_ref_pu[mtrNum].value[0] = _IQmpy(
-				        gMotorVars[mtrNum].IdRef_A, gCurrent_A_to_pu_sf[mtrNum]);
-				gIdq_ref_pu[mtrNum].value[1] = _IQmpy(
-				        gMotorVars[mtrNum].IqRef_A, gCurrent_A_to_pu_sf[mtrNum]);
+			    if (gMotorVars[mtrNum].IqRef_A > current_sat_A)
+			    {
+			        gMotorVars[mtrNum].IqRef_A = current_sat_A;
+			    } else if (gMotorVars[mtrNum].IqRef_A < -gIqSat[mtrNum])
+			    {
+			        gMotorVars[mtrNum].IqRef_A = -current_sat_A;
+			    }
 			}
+
+			gIdq_ref_pu[mtrNum].value[0] = _IQmpy(gMotorVars[mtrNum].IdRef_A, gCurrent_A_to_pu_sf[mtrNum]);
+			gIdq_ref_pu[mtrNum].value[1] = _IQmpy(gMotorVars[mtrNum].IqRef_A, gCurrent_A_to_pu_sf[mtrNum]);
+			/************* End of PD+Feedforward **************/
 
 			// generate the motor electrical angle
 			if(gUserParams[mtrNum].motor_type == MOTOR_Type_Induction)
@@ -1321,6 +1305,7 @@ inline void generic_motor_ISR(const HAL_MtrSelect_e mtrNum)
 	HAL_writePwmData(halHandleMtr[mtrNum], &gPwmData[mtrNum]);
 }
 
+
 interrupt void timer0_ISR()
 {
     ++gTimer0_cnt;
@@ -1389,15 +1374,35 @@ inline void spi_prepare_and_read_msg() {
 }
 
 inline void spi_apply_command_motor(uint16_t *packet) {
-    if(!VIRTUALSPRING_isEnabled(springHandle[0])) {
-        gMotorVars[0].IqRef_A = D16QN_TO_D32Q24(SPI_REG_16(packet, SPI_COMMAND_IQ_1), SPI_QN_IQ);
-    }
+	_iq position_raw;
+	gIqFeedforward_A[0] = D16QN_TO_D32Q24(SPI_REG_16(packet, SPI_COMMAND_IQ_1), SPI_QN_IQ);
+	gIqFeedforward_A[1] = D16QN_TO_D32Q24(SPI_REG_16(packet, SPI_COMMAND_IQ_2), SPI_QN_IQ);
 
-    if(!VIRTUALSPRING_isEnabled(springHandle[1])) {
-        gMotorVars[1].IqRef_A = D16QN_TO_D32Q24(SPI_REG_16(packet, SPI_COMMAND_IQ_2), SPI_QN_IQ);
-    }
+	gKp_ApMrev[0] =  uD16QN_TO_D32Q24( SPI_REG_u16(packet, SPI_COMMAND_KP_1), SPI_QN_KP);
+	gKp_ApMrev[1] =  uD16QN_TO_D32Q24( SPI_REG_u16(packet, SPI_COMMAND_KP_2), SPI_QN_KP);
+
+	gKd_Apkrpm[0] = uD16QN_TO_D32Q24(SPI_REG_u16(packet, SPI_COMMAND_KD_1), SPI_QN_KD);
+	gKd_Apkrpm[1] = uD16QN_TO_D32Q24(SPI_REG_u16(packet, SPI_COMMAND_KD_2), SPI_QN_KD);
+
+	position_raw = ((int32_t) SPI_REG_16(packet, SPI_COMMAND_POS_1) << 16) | (0xffff & SPI_REG_16(packet, SPI_COMMAND_POS_1+1));
+	if (gEnableIndexOffsetCompensation[0])
+		gPositionRef[0] = position_raw + gZeroPositionOffset[0];
+	else
+		gPositionRef[0] = position_raw;
+
+
+	position_raw = ((int32_t) SPI_REG_16(packet, SPI_COMMAND_POS_2) << 16) | (0xffff & SPI_REG_16(packet, SPI_COMMAND_POS_2+1));
+	if (gEnableIndexOffsetCompensation[1])
+		gPositionRef[1] = position_raw + gZeroPositionOffset[1];
+	else
+		gPositionRef[1] = position_raw;
+
+	gVelocityRef[0] = D16QN_TO_D32Q24(SPI_REG_16(packet, SPI_COMMAND_VEL_1), SPI_QN_VEL);
+	gVelocityRef[1] = D16QN_TO_D32Q24(SPI_REG_16(packet, SPI_COMMAND_VEL_2), SPI_QN_VEL);
+
+	gIqSat[0] = uD16QN_TO_D32Q24((0xff & SPI_REG_16(packet, SPI_COMMAND_ISAT_12)), SPI_QN_ISAT);
+	gIqSat[1] = uD16QN_TO_D32Q24(((0xff00 & SPI_REG_16(packet, SPI_COMMAND_ISAT_12)) >> 8), SPI_QN_ISAT);
 }
-
 
 void runOffsetsCalculation(HAL_MtrSelect_e mtrNum)
 {
@@ -1511,8 +1516,10 @@ void spi_setStatus(uint16_t *packet)
     *mode |= gQepIndexWatchdog[HAL_MTR2].isInitialized ? SPI_SENSOR_STATUS_IDX2D : 0;
     *mode |= gQepIndexWatchdog[HAL_MTR1].toggleBit ? SPI_SENSOR_STATUS_IDX1T : 0;
     *mode |= gQepIndexWatchdog[HAL_MTR2].toggleBit ? SPI_SENSOR_STATUS_IDX2T : 0;
-	if (gErrors.bit.qep_error) {
-	    *mode |= SPI_SENSOR_STATUS_ERROR_ENCODER;
+	if (gErrors.bit.qep1_error) {
+	    *mode |= SPI_SENSOR_STATUS_ERROR_ENCODER1;
+	} else if (gErrors.bit.qep2_error) {
+	    *mode |= SPI_SENSOR_STATUS_ERROR_ENCODER2;
 	} else if (gErrors.bit.can_error) {
 		// There is not really a point in reporting this error, the message
 		// most likely won't come through.  So do it here for completeness but
@@ -1640,9 +1647,9 @@ void checkErrors()
 					< gTimer0_stamp - gSPIReceiveIqRefTimeout)
 			);
 
-	//*** Encoder Error
-	gErrors.bit.qep_error = (checkEncoderError(gQepIndexWatchdog[0])
-			|| checkEncoderError(gQepIndexWatchdog[1]));
+	//*** Encoder Errors
+	gErrors.bit.qep1_error = checkEncoderError(gQepIndexWatchdog[0]);
+	gErrors.bit.qep2_error = checkEncoderError(gQepIndexWatchdog[1]);
 
 	//*** POSCONV error
 	gErrors.bit.posconv_error = (

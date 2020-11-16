@@ -289,11 +289,12 @@ typedef struct _MOTOR_Vars_t_
 //! \brief Status message bits.
 struct ERROR_BITS {         // bits   description
 	uint16_t can_error:1;    // 0
-	uint16_t qep_error:1;    // 1
-	uint16_t spi_recv_timeout:1; // 2
-	uint16_t posconv_error:1; // 3
-	uint16_t pos_rollover:1;  // 4
-	uint16_t rsvd:11;        // 5-15  reserved
+	uint16_t qep1_error:1;    // 1
+    uint16_t qep2_error:1;    // 2
+	uint16_t spi_recv_timeout:1; // 3
+	uint16_t posconv_error:1; // 4
+	uint16_t pos_rollover:1;  // 5
+	uint16_t rsvd:11;        // 6-15  reserved
 };
 
 //! \brief Status message that allows integer or bit access.
