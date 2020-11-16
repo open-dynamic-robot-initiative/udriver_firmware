@@ -125,8 +125,8 @@ static const uint32_t crc32_table[] =
 #define SPI_QN_ISAT 3
 #define SPI_QN_CR   15
 #define SPI_QN_ADC  16
-#define SPI_QN_KP   16
-#define SPI_QN_KD   16
+#define SPI_QN_KP   11
+#define SPI_QN_KD   10
 
 /* Position of the values in the sensor packet */
 #define SPI_SENSOR_STATUS 0
@@ -167,8 +167,8 @@ static const uint32_t crc32_table[] =
 /* sensor packet -> status -> ERROR : values */
 //! \brief No error
 #define SPI_SENSOR_STATUS_ERROR_NO_ERROR 0
-//! \brief Encoder error too high
-#define SPI_SENSOR_STATUS_ERROR_ENCODER 1
+//! \brief Encoder 1 error too high
+#define SPI_SENSOR_STATUS_ERROR_ENCODER1 1
 //! \brief Timeout for receiving current references exceeded
 #define SPI_SENSOR_STATUS_ERROR_SPI_RECV_TIMEOUT 2
 //! \brief Motor temperature reached critical value
@@ -178,6 +178,8 @@ static const uint32_t crc32_table[] =
 #define SPI_SENSOR_STATUS_ERROR_POSCONV 4
 //! \brief Position Rollover occured
 #define SPI_SENSOR_STATUS_ERROR_POS_ROLLOVER 5
+//! \brief Encoder 2 error too high
+#define SPI_SENSOR_STATUS_ERROR_ENCODER2 6
 //! \brief Some other error
 #define SPI_SENSOR_STATUS_ERROR_OTHER 7
 
@@ -188,12 +190,14 @@ static const uint32_t crc32_table[] =
 #define SPI_TOTAL_LEN 17
 
 /* To properly handle SPI type conversion */
+#define SPI_REG_u8(p_packet, pos) (*((uint8_t *) ((p_packet) + (pos))))
 #define SPI_REG_u16(p_packet, pos) (*((uint16_t *) ((p_packet) + (pos))))
 #define SPI_REG_u32(p_packet, pos) (*((uint32_t *) ((p_packet) + (pos))))
 
 #define SPI_REG_16(p_packet, pos) (*((int16_t *) ((p_packet) + (pos))))
+#define SPI_REG_u16(p_packet, pos) (*((uint16_t *) ((p_packet) + (pos))))
 #define SPI_REG_32(p_packet, pos) (*((int32_t *) ((p_packet) + (pos))))
-
+#define SPI_REG_u32(p_packet, pos) (*((uint32_t *) ((p_packet) + (pos))))
 
 
 #define D32Q24_TO_D16QN(a,n)      ((a)>>(24-(n))&0xFFFF)
