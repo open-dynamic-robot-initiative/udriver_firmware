@@ -1,21 +1,7 @@
 # udriver_firmware
 
-Firmware of the udriver with SPI control.
-It works on [TODO]
+This repository contains the Firmware of the
+[ODRI](https://github.com/open-dynamic-robot-initiative) udriver with SPI control.
 
-# Installation
-
-## Clone it
-
-Just clone it somewhere
-
-## Dependencies
-
-This package owns a empty motorware folder that you need to fill in.
-In order to do this follow this instruction:
-
-- [TODO]
-
-# Flashing your udrivers
-
-[TODO]
+The flashing process works at least on Ubuntu18.04,
+for more details see the `readme` file [in the firmware folder](./firmware/README.md).
