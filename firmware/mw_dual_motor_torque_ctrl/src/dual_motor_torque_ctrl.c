@@ -568,6 +568,29 @@ void main(void)
 	// At the beginning, there are no errors
 	gErrors.all = 0;
 
+	// Enable the motors programmatically.
+	gMotorVars[HAL_MTR1].Flag_enableSys = true;  // enable the system in general
+	gMotorVars[HAL_MTR1].Flag_Run_Identify = true;  // enable the motor
+	gMotorVars[HAL_MTR2].Flag_enableSys = true;  // enable the system in general
+	gMotorVars[HAL_MTR2].Flag_Run_Identify = true;  // enable the motor
+
+	// Speedup the initialization time by a factor of 10.
+	gUserParams[HAL_MTR1].ctrlWaitTime[CTRL_State_OffLine] /= 10;
+	gUserParams[HAL_MTR2].ctrlWaitTime[CTRL_State_OffLine] /= 10;
+
+	// Lower the current used for alignment to be less agressive and demand less
+	// power from the power supply.
+	gUserParams[HAL_MTR1].maxCurrent_resEst /= 5.;
+	gUserParams[HAL_MTR2].maxCurrent_resEst /= 5.;
+
+	// Run a P controller by default. This is useful for testing the udriver
+	// without attaching a master board to it.
+	gIqSat[HAL_MTR1] = _IQ(2.0);
+	gIqSat[HAL_MTR2] = _IQ(2.0);
+
+	gKp_ApMrev[HAL_MTR1] = _IQ(1.);
+	gKp_ApMrev[HAL_MTR2] = _IQ(1.);
+
 	// initialize the Hardware Abstraction Layer  (HAL)
 	// halHandle will be used throughout the code to interface with the HAL
 	// (set parameters, get and set functions, etc) halHandle is required since
@@ -1171,34 +1194,44 @@ inline void generic_motor_ISR(const HAL_MtrSelect_e mtrNum)
 			speed_pu = STPOSCONV_getVelocity(st_obj[mtrNum].posConvHandle);
 		}
 		else
-		{  // the alignment procedure is in effect
+		{
+			// The alignment procedure is in effect.
+			// For the first CTRL_State_OffLine wait time, do nothing. This allows
+			// the card to initialize during startup. Then, run the calibration procedure.
+			if(gAlignCount[mtrNum]++ < gUserParams[mtrNum].ctrlWaitTime[CTRL_State_OffLine]) {
+				angle_pu[mtrNum] = _IQ(0.0);
+				speed_pu = _IQ(0.0);
 
-			// force motor angle and speed to 0
-			angle_pu[mtrNum] = _IQ(0.0);
-			speed_pu = _IQ(0.0);
+				gIdq_ref_pu[mtrNum].value[1] = _IQ(0.0);
+				gIdq_ref_pu[mtrNum].value[0] = _IQ(0.0);
+			} else {
+				// force motor angle and speed to 0
+				angle_pu[mtrNum] = _IQ(0.0);
+				speed_pu = _IQ(0.0);
 
-			// set D-axis current to Rs estimation current
-			gIdq_ref_pu[mtrNum].value[0] = _IQmpy(
+				// set D-axis current to Rs estimation current
+				gIdq_ref_pu[mtrNum].value[0] = _IQmpy(
 					_IQ(gUserParams[mtrNum].maxCurrent_resEst),
-			        gCurrent_A_to_pu_sf[mtrNum]);
-			// set Q-axis current to 0
-			gIdq_ref_pu[mtrNum].value[1] = _IQ(0.0);
+					gCurrent_A_to_pu_sf[mtrNum]);
+				// set Q-axis current to 0
+				gIdq_ref_pu[mtrNum].value[1] = _IQ(0.0);
 
-			// save encoder reading when forcing motor into alignment
-			if(gUserParams[mtrNum].motor_type == MOTOR_Type_Pm)
-			{
-				ENC_setZeroOffset(encHandle[mtrNum],
+				// save encoder reading when forcing motor into alignment
+				if(gUserParams[mtrNum].motor_type == MOTOR_Type_Pm)
+				{
+					ENC_setZeroOffset(encHandle[mtrNum],
 						(uint32_t)(HAL_getQepPosnMaximum(halHandleMtr[mtrNum])
 								- HAL_getQepPosnCounts(halHandleMtr[mtrNum])));
-			}
+				}
 
-			// if alignment counter exceeds threshold, exit alignment
-			if(gAlignCount[mtrNum]++
-					>= gUserParams[mtrNum].ctrlWaitTime[CTRL_State_OffLine])
-			{
-				gMotorVars[mtrNum].Flag_enableAlignment = false;
-				gAlignCount[mtrNum] = 0;
-				gIdq_ref_pu[mtrNum].value[0] = _IQ(0.0);
+				// if alignment counter exceeds threshold, exit alignment
+				if(gAlignCount[mtrNum]
+						>= 2*gUserParams[mtrNum].ctrlWaitTime[CTRL_State_OffLine])
+				{
+					gMotorVars[mtrNum].Flag_enableAlignment = false;
+					gAlignCount[mtrNum] = 0;
+					gIdq_ref_pu[mtrNum].value[0] = _IQ(0.0);
+				}
 			}
 		}
 
