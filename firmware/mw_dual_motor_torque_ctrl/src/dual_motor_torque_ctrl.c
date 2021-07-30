@@ -341,6 +341,15 @@ QepIndexWatchdog_t gQepIndexWatchdog[2] = {
 		{.isInitialized = false, .indexError_counts = 0, .toggleBit = false}};
 
 
+// ! Time for slowly increasing the torque used for calibration.
+uint_least32_t gCalibrationWrampupTime = (uint_least32_t)( 0.5 * USER_CTRL_FREQ_Hz);
+
+// ! Time to hold the motor steady at calibration current for calibration.
+uint_least32_t gCalibrationHoldTime = (uint_least32_t)( 0.5 * USER_CTRL_FREQ_Hz);
+
+_iq gIdq_ref_pu_calibrate[2] = {_IQ(0.), _IQ(0.)};
+
+
 // function prototypes
 interrupt void xint1_ISR(void);
 inline void spi_load_firsts_words();
@@ -397,7 +406,8 @@ _iq gPositionRef[2] = {0,0};
 //! \brief reference velocities
 _iq gVelocityRef[2] = {0,0};
 
-
+//! \brief If a PD control should be applied right after startup for debugging modules or not.
+//#define DEBUG_PD_AT_STARTUP
 
 
 void setupSPI() {
@@ -568,6 +578,22 @@ void main(void)
 	// At the beginning, there are no errors
 	gErrors.all = 0;
 
+#ifdef DEBUG_PD_AT_STARTUP
+	// For debugging: Enable the motors programmatically.
+	gMotorVars[HAL_MTR1].Flag_enableSys = true;  // enable the system in general
+	gMotorVars[HAL_MTR1].Flag_Run_Identify = true;  // enable the motor
+	gMotorVars[HAL_MTR2].Flag_enableSys = true;  // enable the system in general
+	gMotorVars[HAL_MTR2].Flag_Run_Identify = true;  // enable the motor
+
+	// Run a P controller by default. This is useful for testing the udriver
+	// without attaching a master board to it.
+	gIqSat[HAL_MTR1] = _IQ(2.0);
+	gIqSat[HAL_MTR2] = _IQ(2.0);
+
+	gKp_ApMrev[HAL_MTR1] = _IQ(1.);
+	gKp_ApMrev[HAL_MTR2] = _IQ(1.);
+#endif
+
 	// initialize the Hardware Abstraction Layer  (HAL)
 	// halHandle will be used throughout the code to interface with the HAL
 	// (set parameters, get and set functions, etc) halHandle is required since
@@ -576,7 +602,6 @@ void main(void)
 	// handles is explained in this document:
 	// C:/ti/motorware/motorware_1_01_00_1x/docs/motorware_coding_standards.pdf
 	halHandle = HAL_init(&hal, sizeof(hal));
-
 
 	// initialize the user parameters
 	// This function initializes all values of structure gUserParams with
@@ -1171,34 +1196,53 @@ inline void generic_motor_ISR(const HAL_MtrSelect_e mtrNum)
 			speed_pu = STPOSCONV_getVelocity(st_obj[mtrNum].posConvHandle);
 		}
 		else
-		{  // the alignment procedure is in effect
+		{
+			// The alignment procedure is in effect.
+			// For the first gCalibrationWrampupTime steps, wramp up towards the
+			// calibration current slowly. Then, hold the current for
+			// the duration of gCalibrationHoldTime steps.
+			if(gAlignCount[mtrNum]++ < gCalibrationWrampupTime) {
+				angle_pu[mtrNum] = _IQ(0.0);
+				speed_pu = _IQ(0.0);
 
-			// force motor angle and speed to 0
-			angle_pu[mtrNum] = _IQ(0.0);
-			speed_pu = _IQ(0.0);
+				// Set D-axis current to slowly increasing estimation current.
+				_iq idq_ref_pu_max = _IQmpy(
+						_IQ(gUserParams[mtrNum].maxCurrent_resEst),
+						gCurrent_A_to_pu_sf[mtrNum]);
+				_iq idq_ref_pu_step = idq_ref_pu_max / gCalibrationWrampupTime;
+				gIdq_ref_pu_calibrate[mtrNum] += idq_ref_pu_step;
+				gIdq_ref_pu[mtrNum].value[0] = gIdq_ref_pu_calibrate[mtrNum];
 
-			// set D-axis current to Rs estimation current
-			gIdq_ref_pu[mtrNum].value[0] = _IQmpy(
+				// Set Q-axis current to 0.
+				gIdq_ref_pu[mtrNum].value[1] = _IQ(0.0);
+			} else {
+				// force motor angle and speed to 0
+				angle_pu[mtrNum] = _IQ(0.0);
+				speed_pu = _IQ(0.0);
+
+				// set D-axis current to Rs estimation current
+				gIdq_ref_pu[mtrNum].value[0] = _IQmpy(
 					_IQ(gUserParams[mtrNum].maxCurrent_resEst),
-			        gCurrent_A_to_pu_sf[mtrNum]);
-			// set Q-axis current to 0
-			gIdq_ref_pu[mtrNum].value[1] = _IQ(0.0);
+					gCurrent_A_to_pu_sf[mtrNum]);
+				// set Q-axis current to 0
+				gIdq_ref_pu[mtrNum].value[1] = _IQ(0.0);
 
-			// save encoder reading when forcing motor into alignment
-			if(gUserParams[mtrNum].motor_type == MOTOR_Type_Pm)
-			{
-				ENC_setZeroOffset(encHandle[mtrNum],
+				// save encoder reading when forcing motor into alignment
+				if(gUserParams[mtrNum].motor_type == MOTOR_Type_Pm)
+				{
+					ENC_setZeroOffset(encHandle[mtrNum],
 						(uint32_t)(HAL_getQepPosnMaximum(halHandleMtr[mtrNum])
 								- HAL_getQepPosnCounts(halHandleMtr[mtrNum])));
-			}
+				}
 
-			// if alignment counter exceeds threshold, exit alignment
-			if(gAlignCount[mtrNum]++
-					>= gUserParams[mtrNum].ctrlWaitTime[CTRL_State_OffLine])
-			{
-				gMotorVars[mtrNum].Flag_enableAlignment = false;
-				gAlignCount[mtrNum] = 0;
-				gIdq_ref_pu[mtrNum].value[0] = _IQ(0.0);
+				// if alignment counter exceeds threshold, exit alignment.
+				if(gAlignCount[mtrNum] >= gCalibrationHoldTime + gCalibrationWrampupTime)
+				{
+					gMotorVars[mtrNum].Flag_enableAlignment = false;
+					gAlignCount[mtrNum] = 0;
+					gIdq_ref_pu_calibrate[mtrNum] = _IQ(0.0);
+					gIdq_ref_pu[mtrNum].value[0] = _IQ(0.0);
+				}
 			}
 		}
 
