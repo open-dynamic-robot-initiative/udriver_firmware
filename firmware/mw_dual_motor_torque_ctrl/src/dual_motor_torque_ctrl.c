@@ -341,10 +341,10 @@ QepIndexWatchdog_t gQepIndexWatchdog[2] = {
 		{.isInitialized = false, .indexError_counts = 0, .toggleBit = false}};
 
 
-// ! Time for slowly increasing the torque used for calibration.
+//! Time for slowly increasing the torque used for calibration.
 uint_least32_t gCalibrationWrampupTime = (uint_least32_t)( 0.5 * USER_CTRL_FREQ_Hz);
 
-// ! Time to hold the motor steady at calibration current for calibration.
+//! Time to hold the motor steady at calibration current for calibration.
 uint_least32_t gCalibrationHoldTime = (uint_least32_t)( 0.5 * USER_CTRL_FREQ_Hz);
 
 _iq gIdq_ref_pu_calibrate[2] = {_IQ(0.), _IQ(0.)};
@@ -1197,14 +1197,18 @@ inline void generic_motor_ISR(const HAL_MtrSelect_e mtrNum)
 		}
 		else
 		{
+			// force motor angle and speed to 0
+			angle_pu[mtrNum] = _IQ(0.0);
+			speed_pu = _IQ(0.0);
+
+			// Set Q-axis current to 0.
+			gIdq_ref_pu[mtrNum].value[1] = _IQ(0.0);
+
 			// The alignment procedure is in effect.
 			// For the first gCalibrationWrampupTime steps, wramp up towards the
 			// calibration current slowly. Then, hold the current for
 			// the duration of gCalibrationHoldTime steps.
 			if(gAlignCount[mtrNum]++ < gCalibrationWrampupTime) {
-				angle_pu[mtrNum] = _IQ(0.0);
-				speed_pu = _IQ(0.0);
-
 				// Set D-axis current to slowly increasing estimation current.
 				_iq idq_ref_pu_max = _IQmpy(
 						_IQ(gUserParams[mtrNum].maxCurrent_resEst),
@@ -1212,20 +1216,11 @@ inline void generic_motor_ISR(const HAL_MtrSelect_e mtrNum)
 				_iq idq_ref_pu_step = idq_ref_pu_max / gCalibrationWrampupTime;
 				gIdq_ref_pu_calibrate[mtrNum] += idq_ref_pu_step;
 				gIdq_ref_pu[mtrNum].value[0] = gIdq_ref_pu_calibrate[mtrNum];
-
-				// Set Q-axis current to 0.
-				gIdq_ref_pu[mtrNum].value[1] = _IQ(0.0);
 			} else {
-				// force motor angle and speed to 0
-				angle_pu[mtrNum] = _IQ(0.0);
-				speed_pu = _IQ(0.0);
-
 				// set D-axis current to Rs estimation current
 				gIdq_ref_pu[mtrNum].value[0] = _IQmpy(
 					_IQ(gUserParams[mtrNum].maxCurrent_resEst),
 					gCurrent_A_to_pu_sf[mtrNum]);
-				// set Q-axis current to 0
-				gIdq_ref_pu[mtrNum].value[1] = _IQ(0.0);
 
 				// save encoder reading when forcing motor into alignment
 				if(gUserParams[mtrNum].motor_type == MOTOR_Type_Pm)
