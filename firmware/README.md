@@ -39,6 +39,7 @@ To flash the firmware on the udrive boards, follow these steps:
 
 1. Download the latest version of [Ti CCStudio](http://www.ti.com/tool/ccstudio)
   * Follow the [install instructions](http://software-dl.ti.com/ccs/esd/documents/ccsv10_linux_host_support.html#installation-instructions)
+    * You can select 'custom installation' as recommanded, in this case you need to select the module "C2000 Realtime MCUs"
   * Make sure to install the drivers after installation, see [here](http://software-dl.ti.com/ccs/esd/documents/ccsv10_linux_host_support.html#ubuntu-18-04-lts). 
   * Restart your computer to ensure the drivers are working properly.
 2. Clone / download this repo
