@@ -39,23 +39,20 @@ To flash the firmware on the udrive boards, follow these steps:
 
 1. Download the latest version of [Ti CCStudio](http://www.ti.com/tool/ccstudio)
   * Follow the [install instructions](http://software-dl.ti.com/ccs/esd/documents/ccsv10_linux_host_support.html#installation-instructions)
-    * **Note:** You can select 'custom installation' as recommanded, in this case you need to select the module "C2000 Realtime MCUs"
+    * **Note:** You can select 'custom installation' as recommanded, in this case you need to select the module `C2000 Realtime MCUs`
   * Make sure to install the drivers after installation, see [here](http://software-dl.ti.com/ccs/esd/documents/ccsv10_linux_host_support.html#ubuntu-18-04-lts).
-    * **Note:** The path to the installation is by default in "ti/ccsXXX/ccs/" if the linstall is done without sudo. With sudo look in "/opt"
+    * **Note:** The path to the installation is by default in `ti/ccsXXX/ccs/` if the linstall is done without sudo. With sudo look in "/opt"
   * Restart your computer to ensure the drivers are working properly.
 2. Clone / download this repo
 3. Start CCStudio, create a new workspace
 4. Import the projects in CCStudio via the menu: `Project > Import CCS Projects...`
-  * Set the directory of the project you want to export as search-directory. For example <your_workspace>/workspace/src/ccs/blmc/mw_dual_motor_torque_ctrl for the torque controller. The Discovered projects pane should then show dual_motor_torque_ctrl.
-  * Make sure the `Copy projects into workspace` option is not set.
+  * Set the directory of the project you want to export as search-directory. For example `<path_to_udriver_firmare>/firmware/mw_dual_motor_torque_ctrl` for the torque controller. The Discovered projects pane should then show dual_motor_torque_ctrl.
+  * Make sure the `Copy projects into workspace` option is **NOT** set.
   * <img src="images/step_01_import.png" width="500px"/>
 5. Compile your code, using the "Flash" build. For this, click on the arrow next to the small hammer in the menu bar and select "Flash"
   * <img src="images/step_02_change_target.png" width="800px"/>
-6. Make sure the udrive board is powered and connected via USB to the PC.
+6. Make sure the udriver board is powered and connected via USB to the PC.
 7. Start the Debugger by clicking on the bug icon in the tool bar. The view might change into the debug view.
-8. If things go well, a progress window pops up (after up to 30 seconds). The window shows the progress of flashing the compiled firmware on the board
-
-If no error message pops up, the flashing was successful. The udrive board can be disconnected.
-
-
-
+8. If things go well, a progress window pops up (after up to 30 seconds). The window shows the progress of flashing the compiled firmware on the board. If no error message pops up, the flashing was successful.
+9. The view is now in debug mode, you need to leave this mode before disconnected the udriver board. Click on the `stop` (red square) button located on the top of the interface.
+10. Then you can power down the udriver board and disconnect the flasher.
