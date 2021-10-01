@@ -29,7 +29,7 @@ Our software is based on Texas Instruments' MotorWare library which is freely av
        ├── user_config_f28069m_drv8305
        └── ...
 
-3. Now, from the `udriver_firmware` folder, patch the motorware directory
+3. Now, from the `udriver_firmware/firmware` folder, patch the motorware directory
 
         patch -p1 < motorware_1_01_00_18.patch
 
