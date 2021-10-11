@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>dual_motor_torque_ctrl</name>
+	<name>dual_motor_torque_ctrl_spi</name>
 	<comment></comment>
 	<projects>
 	</projects>
