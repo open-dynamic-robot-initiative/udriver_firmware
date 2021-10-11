@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>dual_motor_torque_ctrl</name>
+	<name>dual_motor_torque_ctrl_can</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -275,7 +275,7 @@
 	<variableList>
 		<variable>
 			<name>AMD_MW_EXT</name>
-			<value>$%7BPARENT-2-PROJECT_LOC%7D/amd_motorware_ext</value>
+			<value>$%7BPARENT-3-PROJECT_LOC%7D/amd_motorware_ext</value>
 		</variable>
 		<variable>
 			<name>MW_INSTALL_DIR</name>
@@ -283,7 +283,7 @@
 		</variable>
 		<variable>
 			<name>USER_CONFIG_DIR</name>
-			<value>$%7BPARENT-2-PROJECT_LOC%7D/user_config_f28069m_drv8305</value>
+			<value>$%7BPARENT-3-PROJECT_LOC%7D/config_f28069m_drv8305</value>
 		</variable>
 	</variableList>
 </projectDescription>
