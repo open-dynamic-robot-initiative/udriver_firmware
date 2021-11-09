@@ -3,36 +3,62 @@ How to Build and Flash the Firmware
 ***********************************
 
 
-Requirements and Paths
-======================
+Get the Code
+============
 
-Requires the following additional repositories:
+Simply clone the firmware repository (including submodules)::
 
-* amd_motorware_ext_
-* user_config_f28069m_drv8305_
-
-Further Texas Instrument's MotorWare_ library is needed.  There are
-modifications that have to be made to the original MotorWare in order to build
-this project.  See the instructions on how to apply them, see the README of
-amd_motorware_ext_.
+    $ git clone --recursive https://github.com/open-dynamic-robot-initiative/udriver_firmware.git
 
 
-By default, it is expected that all packages are in separate subdirectories of
-the same root directory.  So your workspace structure should look like this::
-
-    workspace
-    ├── amd_motorware_ext
-    ├── mw_dual_motor_torque_ctrl
-    ├── motorware
-    └── user_config_f28069m_drv8305
-
-In case you cannot follow this structure for some reason, you can modify the
-path variables ``$MW_INSTALL_DIR`` and ``$USER_CONFIG_DIR`` in the project settings
-of ``mw_dual_motor_torque_ctrl``.
+The default configuration is assuming the *Antigravity 4004 300kv* motors.  In
+case you are using different motors, change the ``config_f28069m_drv8305``
+submodule to the appropriate branch.
 
 
-Code Composer Studio
---------------------
+Get MotorWare
+=============
+
+Our software is based on Texas Instruments' MotorWare_ library which can be
+downloaded from their website.  We made some modifications to the original
+MotorWare which are needed to build our software.
+We provide patch files ``motorware_1_01_00_18_patch*`` with these changes, they
+are included in the directories ``firmware_can``/``firmware_spi`` (note that
+they differ for the two firmware versions.
+
+Use the following steps to set up your workspace so you are able to build the
+software:
+
+1. Download MotorWare v1.01.00.18 from the MotorWare_ website.
+2. Install it to extract the source.  For Linux users: Unfortunately TI only
+   provides a Windows installer.  There is not really an installation required,
+   you only need the source files.  You can get them by either installing on a
+   Windows machine or using an emulator like Wine on Linux and then copy the
+   files from the installation directory.
+   Search for the directory containing the ``sw`` directory and copy that into
+   a directory called ``firmware_X/motorware`` in your workspace (where ``X``
+   is either "can" or "spi", depending on which version you want to use).  The
+   structure should be like this::
+
+       workspace
+       ├── amd_motorware_ext
+       ├── config_f28069m_drv8305
+       └── firmware_X
+           ├── motorware
+           │   ├── docs
+           │   ├── eclipse
+           │   ├── mw_explorer
+           │   └── sw
+           └── mw_dual_motor_torque_ctrl
+
+
+Now go into the ``motorware`` directory and apply the patch file::
+
+    $ patch -p1 < ../motorware_1_01_00_18.patch
+
+
+Install Code Composer Studio
+============================
 
 To build the firmware and to flash it to the boards, you need Texas Instruments'
 `Code Composer Studio`_ (CCS).  These instructions are tested with version
@@ -41,11 +67,12 @@ To build the firmware and to flash it to the boards, you need Texas Instruments'
 When installing it, make sure the following components are selected:
 
 * **Processor Support**: C2000 32-bit Real-time MCUs
-* **Debug Probes**: TI XDS
+* **Debug Probes**: TI XDS (this only needs to be selected explicitly in older
+  versions of CCS)
 
 When starting CCS for the first time, you have to specify a workspace location.
-Note that this "CCS workspace" is just where CCS stores its configuration and is
-not related to the workspace directory that is described above (i.e. the CCS
+Note that this "CCS workspace" is just where CCS stores its configuration and
+is not related to the workspace directory that is described above (i.e. the CCS
 workspace doesn't need to be in this directory).
 
 
@@ -63,8 +90,8 @@ via the menu
     Project > Import CCS Projects...
 
 In the import dialogue, set the search-directory to the one of the
-``mw_dual_motor_torque_ctrl`` package.The Discovered projects pane should then
-show ``dual_motor_torque_ctrl``.
+``mw_dual_motor_torque_ctrl`` package. The Discovered projects pane should then
+show ``dual_motor_torque_ctrl_X`` (X = "can" or "spi").
 
 **Make sure the "Copy projects into workspace" option is *not* set.**
 

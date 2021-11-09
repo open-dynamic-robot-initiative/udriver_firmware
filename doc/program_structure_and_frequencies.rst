@@ -2,6 +2,11 @@
 Program Structure & Frequencies
 *******************************
 
+.. todo::
+
+    This was written for the CAN firmware. Does the SPI firmware behave the
+    same in this regard?
+
 .. note::
 
     The information of this page is intended for people who want to modifiy the
@@ -10,7 +15,7 @@ Program Structure & Frequencies
 
 The programs that run on the microcontroller usually consist of two loops: an
 endless loop in the main() function that runs without any timing guarantees and
-a main ISR (**Interrupt Service Routine**) function that is triggered by an
+a main ISR (*Interrupt Service Routine*) function that is triggered by an
 interrupt based on the PWM frequency. Everything that is timing critical
 (controller, position update, ...) should go to the ISR, while other stuff
 should go to the main loop (update of GUI values, etc.). Please note that the

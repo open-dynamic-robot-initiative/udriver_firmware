@@ -7,7 +7,7 @@ hidden below the J1 BoosterPack.  Therefore we are using three additional LEDs
 (red, yellow, green) that can be connected to the GPIOs 12 (red), 13 (yellow)
 and 22 (green) and the 3.3V pin:
 
-.. image:: images/launchxl-f28069m_extern_led_pins.png
+.. image:: ../images/launchxl-f28069m_extern_led_pins.png
    :alt: Image of the LaunchPad showing the GPIO pins used for the LEDs.
 
 The red LED is synchronized with the red on-board LED, the green LED is
@@ -33,7 +33,7 @@ Green (or Blue) LED
 While the motors are aligned with the encoders, they are not yet ready to be
 used. The motor position is locked (do not move manually!) and current commands
 are ignored. Alignment is automatically started when motors are enabled for the
-first time and it takes a few seconds.  See :doc:`motor_alignment` for more
+first time and it takes a few seconds.  See :doc:`../motor_alignment` for more
 information.
 
 

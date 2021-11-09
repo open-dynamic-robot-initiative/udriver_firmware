@@ -51,8 +51,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-# project = "ODRI Motor Board Firmware for CAN Communication"
-project = "ODRI Firmware for CAN"
+project = "ODRI Firmware for uDriver Boards"
 copyright = "2021, Max Planck Gesellschaft"
 author = "Felix Widmaier"
 
@@ -95,7 +94,10 @@ html_theme = "alabaster"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "fixed_sidebar": True,
+    "sidebar_collapse": True,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
