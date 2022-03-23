@@ -22,12 +22,11 @@ Get MotorWare
 Our software is based on Texas Instruments' MotorWare_ library which can be
 downloaded from their website.  We made some modifications to the original
 MotorWare which are needed to build our software.
-We provide patch files ``motorware_1_01_00_18_patch*`` with these changes, they
+We provide patch files ``motorware_1_01_00_18_patch`` with these changes, they
 are included in the directories ``firmware_can``/``firmware_spi`` (note that
 they differ for the two firmware versions.
 
-Use the following steps to set up your workspace so you are able to build the
-software:
+Use the following steps to set up MotorWare for the project:
 
 1. Download MotorWare v1.01.00.18 from the MotorWare_ website.
 2. Install it to extract the source.  For Linux users: Unfortunately TI only
@@ -35,26 +34,25 @@ software:
    you only need the source files.  You can get them by either installing on a
    Windows machine or using an emulator like Wine on Linux and then copy the
    files from the installation directory.
-   Search for the directory containing the ``sw`` directory and copy that into
-   a directory called ``firmware_X/motorware`` in your workspace (where ``X``
-   is either "can" or "spi", depending on which version you want to use).  The
-   structure should be like this::
+   Search for the directory containing the ``sw`` directory and copy it into
+   the directory ``firmware_X/motorware`` (where ``X`` is either "can" or "spi",
+   depending on which version you want to use).  The structure should be like
+   this::
 
-       workspace
+       udriver_firmware/firmware
        ├── amd_motorware_ext
        ├── config_f28069m_drv8305
        └── firmware_X
-           ├── motorware
+           ├── motorware                <-- Add motorware here
            │   ├── docs
            │   ├── eclipse
            │   ├── mw_explorer
            │   └── sw
            └── mw_dual_motor_torque_ctrl
 
+3. Finally go into the ``motorware`` directory and apply the patch file::
 
-Now go into the ``motorware`` directory and apply the patch file::
-
-    $ patch -p1 < ../motorware_1_01_00_18.patch
+      $ patch -p1 < ../motorware_1_01_00_18.patch
 
 
 Install Code Composer Studio
@@ -72,8 +70,8 @@ When installing it, make sure the following components are selected:
 
 When starting CCS for the first time, you have to specify a workspace location.
 Note that this "CCS workspace" is just where CCS stores its configuration and
-is not related to the workspace directory that is described above (i.e. the CCS
-workspace doesn't need to be in this directory).
+is not related to the location of the source code (i.e. the CCS workspace and
+the location of the firmware source code should be in different directories).
 
 
 Build Instructions
