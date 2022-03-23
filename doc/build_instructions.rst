@@ -93,7 +93,9 @@ In the import dialogue, set the search-directory to the one of the
 ``mw_dual_motor_torque_ctrl`` package. The Discovered projects pane should then
 show ``dual_motor_torque_ctrl_X`` (X = "can" or "spi").
 
-**Make sure the "Copy projects into workspace" option is *not* set.**
+.. important::
+
+   Make sure the "Copy projects into workspace" option is **not** set.
 
 After importing, the project should show up in the *Project Explorer*.
 
