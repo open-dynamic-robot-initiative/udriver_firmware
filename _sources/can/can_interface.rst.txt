@@ -112,18 +112,19 @@ Messages sent to the board
 | 0x005 | CAN\_ID\_IqRef    | Current :math:`I_q` Reference   | - MDL: IqRef for motor 1                   |
 |       |                   | :math:`[A]`                     | - MDH: IqRef for motor 2                   |
 +-------+-------------------+---------------------------------+--------------------------------------------+
-| 0x006 | CAN\_ID\_KP       | Gains for P controller          | - MDL: P gain for motor 1                  |
-|       |                   | :math:`[\frac{A}{mrev}]`        | - MDH: P gain for motor 2                  |
-+-------+-------------------+---------------------------------+--------------------------------------------+
-| 0x007 | CAN\_ID\_KD       | Gains for D controller          | - MDL: D gain for motor 1                  |
-|       |                   | :math:`[\frac{A}{kmrev / min}]` | - MDH: D gain for motor 2                  |
-+-------+-------------------+---------------------------------+--------------------------------------------+
-| 0x008 | CAN\_ID\_POS\_REF | Reference for P controller      | - MDL: Reference position for motor 1      |
-|       |                   | :math:`[mrev]`                  | - MDH: Reference position for motor 2      |
-+-------+-------------------+---------------------------------+--------------------------------------------+
-| 0x009 | CAN\_ID\_VEL\_REF | Reference for D controller      | - MDL: Reference velocity for motor 1      |
-|       |                   | :math:`[\frac{kmrev}{min}]`     | - MDH: Reference velocity for motor 2      |
-+-------+-------------------+---------------------------------+--------------------------------------------+
+
+.. | 0x006 | CAN\_ID\_KP       | Gains for P controller          | - MDL: P gain for motor 1                  |
+.. |       |                   | :math:`[\frac{A}{mrev}]`        | - MDH: P gain for motor 2                  |
+.. +-------+-------------------+---------------------------------+--------------------------------------------+
+.. | 0x007 | CAN\_ID\_KD       | Gains for D controller          | - MDL: D gain for motor 1                  |
+.. |       |                   | :math:`[\frac{A}{kmrev / min}]` | - MDH: D gain for motor 2                  |
+.. +-------+-------------------+---------------------------------+--------------------------------------------+
+.. | 0x008 | CAN\_ID\_POS\_REF | Reference for P controller      | - MDL: Reference position for motor 1      |
+.. |       |                   | :math:`[mrev]`                  | - MDH: Reference position for motor 2      |
+.. +-------+-------------------+---------------------------------+--------------------------------------------+
+.. | 0x009 | CAN\_ID\_VEL\_REF | Reference for D controller      | - MDL: Reference velocity for motor 1      |
+.. |       |                   | :math:`[\frac{kmrev}{min}]`     | - MDH: Reference velocity for motor 2      |
+.. +-------+-------------------+---------------------------------+--------------------------------------------+
 
 :math:`mrev` = motor revolutions.  E.g. 0.5 is half a revolution, 1.0 a full revolution, 2.0 two revolutions, etc.
 
@@ -166,14 +167,15 @@ lower bytes (MDL) contain the value that is to be assigned to the parameter.
 +------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
 | 0x1F | ENABLE\_POS\_ROLLOVER\_ERROR             | Enable the position rollover error                                       | 0/1    | 0       |
 +------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
-| 0x28 | CAN\_CMD\_P\_CONTROLLER\_LIMIT\_IQ\_MTR1 | Set the current limit for the P controller of motor 1 [A]                | IQ24   | 0       |
-+------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
-| 0x29 | CAN\_CMD\_P\_CONTROLLER\_LIMIT\_IQ\_MTR2 | Set the current limit for the P controller of motor 2 [A]                | IQ24   | 0       |
-+------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
-| 0x2A | CAN\_CMD\_D\_CONTROLLER\_LIMIT\_IQ\_MTR1 | Set the current limit for the D controller of motor 1 [A]                | IQ24   | 0       |
-+------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
-| 0x2B | CAN\_CMD\_D\_CONTROLLER\_LIMIT\_IQ\_MTR2 | Set the current limit for the D controller of motor 2 [A]                | IQ24   | 0       |
-+------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
+
+.. | 0x28 | CAN\_CMD\_P\_CONTROLLER\_LIMIT\_IQ\_MTR1 | Set the current limit for the P controller of motor 1 [A]                | IQ24   | 0       |
+.. +------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
+.. | 0x29 | CAN\_CMD\_P\_CONTROLLER\_LIMIT\_IQ\_MTR2 | Set the current limit for the P controller of motor 2 [A]                | IQ24   | 0       |
+.. +------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
+.. | 0x2A | CAN\_CMD\_D\_CONTROLLER\_LIMIT\_IQ\_MTR1 | Set the current limit for the D controller of motor 1 [A]                | IQ24   | 0       |
+.. +------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
+.. | 0x2B | CAN\_CMD\_D\_CONTROLLER\_LIMIT\_IQ\_MTR2 | Set the current limit for the D controller of motor 2 [A]                | IQ24   | 0       |
+.. +------+------------------------------------------+--------------------------------------------------------------------------+--------+---------+
 
 Example: To enable motor 1, set MDH = 2 and MDL = 1.
 

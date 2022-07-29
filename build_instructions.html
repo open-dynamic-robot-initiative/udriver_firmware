@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>How to Build and Flash the Firmware &#8212; ODRI Firmware for uDriver Boards 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -76,7 +77,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -86,9 +87,9 @@
           <div class="body" role="main">
             
   <section id="how-to-build-and-flash-the-firmware">
-<h1>How to Build and Flash the Firmware<a class="headerlink" href="#how-to-build-and-flash-the-firmware" title="Permalink to this headline">¶</a></h1>
+<h1>How to Build and Flash the Firmware<a class="headerlink" href="#how-to-build-and-flash-the-firmware" title="Permalink to this heading">¶</a></h1>
 <section id="get-the-code">
-<h2>Get the Code<a class="headerlink" href="#get-the-code" title="Permalink to this headline">¶</a></h2>
+<h2>Get the Code<a class="headerlink" href="#get-the-code" title="Permalink to this heading">¶</a></h2>
 <p>Simply clone the firmware repository (including submodules):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone --recursive https://github.com/open-dynamic-robot-initiative/udriver_firmware.git
 </pre></div>
@@ -98,7 +99,7 @@ case you are using different motors, change the <code class="docutils literal no
 submodule to the appropriate branch.</p>
 </section>
 <section id="get-motorware">
-<h2>Get MotorWare<a class="headerlink" href="#get-motorware" title="Permalink to this headline">¶</a></h2>
+<h2>Get MotorWare<a class="headerlink" href="#get-motorware" title="Permalink to this heading">¶</a></h2>
 <p>Our software is based on Texas Instruments’ <a class="reference external" href="https://www.ti.com/tool/MOTORWARE">MotorWare</a> library which can be
 downloaded from their website.  We made some modifications to the original
 MotorWare which are needed to build our software.
@@ -138,7 +139,7 @@ this:</p>
 </ol>
 </section>
 <section id="install-code-composer-studio">
-<h2>Install Code Composer Studio<a class="headerlink" href="#install-code-composer-studio" title="Permalink to this headline">¶</a></h2>
+<h2>Install Code Composer Studio<a class="headerlink" href="#install-code-composer-studio" title="Permalink to this heading">¶</a></h2>
 <p>To build the firmware and to flash it to the boards, you need Texas Instruments’
 <a class="reference external" href="http://www.ti.com/tool/ccstudio">Code Composer Studio</a> (CCS).  These instructions are tested with version
 9.1.0 but other versions may work as well.</p>
@@ -154,9 +155,9 @@ is not related to the location of the source code (i.e. the CCS workspace and
 the location of the firmware source code should be in different directories).</p>
 </section>
 <section id="build-instructions">
-<h2>Build Instructions<a class="headerlink" href="#build-instructions" title="Permalink to this headline">¶</a></h2>
+<h2>Build Instructions<a class="headerlink" href="#build-instructions" title="Permalink to this heading">¶</a></h2>
 <section id="import-in-code-composer-studio">
-<h3>Import in Code Composer Studio<a class="headerlink" href="#import-in-code-composer-studio" title="Permalink to this headline">¶</a></h3>
+<h3>Import in Code Composer Studio<a class="headerlink" href="#import-in-code-composer-studio" title="Permalink to this heading">¶</a></h3>
 <p>Start Code Composer Studio and import the <code class="docutils literal notranslate"><span class="pre">mw_dual_motor_torque_ctrl</span></code> project
 via the menu</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Project</span> <span class="o">&gt;</span> <span class="n">Import</span> <span class="n">CCS</span> <span class="n">Projects</span><span class="o">...</span>
@@ -172,7 +173,7 @@ show <code class="docutils literal notranslate"><span class="pre">dual_motor_tor
 <p>After importing, the project should show up in the <em>Project Explorer</em>.</p>
 </section>
 <section id="build-and-run-in-debug-mode">
-<h3>Build and Run in Debug Mode<a class="headerlink" href="#build-and-run-in-debug-mode" title="Permalink to this headline">¶</a></h3>
+<h3>Build and Run in Debug Mode<a class="headerlink" href="#build-and-run-in-debug-mode" title="Permalink to this heading">¶</a></h3>
 <p>You can run the firmware in debug mode while the board is connected to the
 computer via USB.  This is mostly useful for development.</p>
 <p>Note: When using a TI LaunchPad board, make sure the boot switches are set such
@@ -195,7 +196,7 @@ board!</p></li>
 means all steps have to be repeated, everytime the board is restarted.</p>
 </section>
 <section id="build-and-write-to-flash">
-<h3>Build and Write to Flash<a class="headerlink" href="#build-and-write-to-flash" title="Permalink to this headline">¶</a></h3>
+<h3>Build and Write to Flash<a class="headerlink" href="#build-and-write-to-flash" title="Permalink to this heading">¶</a></h3>
 <p>To have the program written to flash rather than RAM (so that it is permanently
 stored on the board), simply switch the build type from “Release” to “Flash”.</p>
 <p>Now compile and write the program to the board by running the debugger (same
@@ -206,7 +207,7 @@ board to the right configuration so that the firmware is automatically loaded
 from flash when restarting the board (see next section).</p>
 </section>
 <section id="launchpad-boot-switches">
-<h3>LaunchPad Boot Switches<a class="headerlink" href="#launchpad-boot-switches" title="Permalink to this headline">¶</a></h3>
+<h3>LaunchPad Boot Switches<a class="headerlink" href="#launchpad-boot-switches" title="Permalink to this heading">¶</a></h3>
 <p><em>This only applies to the TI LaunchPad board.</em></p>
 <p>After the program is written to the flash memory with the steps described above,
 the boot settings have to be changed to tell the board to run the code in the
@@ -218,10 +219,6 @@ that connection via USB is not possible in this configuration (i.e. to use the
 debugger or update the program you have to set the switches back to Up/Up/Up
 again).</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 51%" />
-<col style="width: 49%" />
-</colgroup>
 <tbody>
 <tr class="row-odd"><td><p>Run firmware from flash</p></td>
 <td><p>Use jTag (to debug via USB)</p></td>
@@ -248,7 +245,7 @@ again).</p>
       &copy;2021, Max Planck Gesellschaft.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

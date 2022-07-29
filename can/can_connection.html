@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Connecting via CAN &#8212; ODRI Firmware for uDriver Boards 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -77,7 +78,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -87,9 +88,9 @@
           <div class="body" role="main">
             
   <section id="connecting-via-can">
-<h1>Connecting via CAN<a class="headerlink" href="#connecting-via-can" title="Permalink to this headline">¶</a></h1>
+<h1>Connecting via CAN<a class="headerlink" href="#connecting-via-can" title="Permalink to this heading">¶</a></h1>
 <section id="hardware">
-<h2>Hardware<a class="headerlink" href="#hardware" title="Permalink to this headline">¶</a></h2>
+<h2>Hardware<a class="headerlink" href="#hardware" title="Permalink to this heading">¶</a></h2>
 <p>The motor board for which this firmware is written supports the CAN 2.0B
 standard.
 In theory any CAN device following the standard should be able to communicate
@@ -100,13 +101,13 @@ problems with PEAK’s <strong>CAN FD</strong> devices, so we recommend to stick
 manufacturers, so we cannot say anything about those.</p>
 </section>
 <section id="linux-drivers">
-<h2>Linux Drivers<a class="headerlink" href="#linux-drivers" title="Permalink to this headline">¶</a></h2>
+<h2>Linux Drivers<a class="headerlink" href="#linux-drivers" title="Permalink to this heading">¶</a></h2>
 <p>For the PEAK devices, SocketCAN drivers are already included in the standard
 Linux kernel, so there is no need to manually install any driver.
 In the following, it is assumed that SocketCAN is used.</p>
 </section>
 <section id="connection-setup">
-<h2>Connection Setup<a class="headerlink" href="#connection-setup" title="Permalink to this headline">¶</a></h2>
+<h2>Connection Setup<a class="headerlink" href="#connection-setup" title="Permalink to this heading">¶</a></h2>
 <p>When using SocketCAN, there is an interface for each available channel, called
 “can0”, “can1”, “can2”, …</p>
 <p>Each interface has to be configured and enabled in order to be usable.  This
@@ -122,7 +123,7 @@ accordingly, run</p>
 <p>This has to be done for each interface that you want to use (replace “can0”
 accordingly).</p>
 <section id="determine-names-of-interfaces">
-<h3>Determine Names of Interfaces<a class="headerlink" href="#determine-names-of-interfaces" title="Permalink to this headline">¶</a></h3>
+<h3>Determine Names of Interfaces<a class="headerlink" href="#determine-names-of-interfaces" title="Permalink to this heading">¶</a></h3>
 <p>The names are assigned automatically to the interfaces and the order may not
 seem logical from outside.  So you first need to find out which physical port
 “can0”, “can1”, etc. correspond to.</p>
@@ -157,7 +158,7 @@ this case, the identification procedure needs to be repeated.</p>
 </section>
 </section>
 <section id="testing-the-connection">
-<h2>Testing the Connection<a class="headerlink" href="#testing-the-connection" title="Permalink to this headline">¶</a></h2>
+<h2>Testing the Connection<a class="headerlink" href="#testing-the-connection" title="Permalink to this heading">¶</a></h2>
 <p>For a first basic test if the CAN communication is working, the console
 applications <code class="docutils literal notranslate"><span class="pre">candump</span></code> and <code class="docutils literal notranslate"><span class="pre">cansend</span></code> can be used.  On Ubuntu, they can be
 installed via the <code class="docutils literal notranslate"><span class="pre">can-utils</span></code> package.</p>
@@ -221,7 +222,7 @@ delays mean that the controller will be less stable.</p>
       &copy;2021, Max Planck Gesellschaft.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

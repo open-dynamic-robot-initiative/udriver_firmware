@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>CAN Communication Protocol &#8212; ODRI Firmware for uDriver Boards 1.0.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -78,7 +79,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -88,7 +89,7 @@
           <div class="body" role="main">
             
   <section id="can-communication-protocol">
-<h1>CAN Communication Protocol<a class="headerlink" href="#can-communication-protocol" title="Permalink to this headline">¶</a></h1>
+<h1>CAN Communication Protocol<a class="headerlink" href="#can-communication-protocol" title="Permalink to this heading">¶</a></h1>
 <p>Each frame has an 11-bit identifier, which is used to distinguish different
 types of messages. In the following the protocol (which identifier is used for
 which data and how the data is stored inside the frame) that is used by the
@@ -100,19 +101,13 @@ first.</p>
 bytes each. Following the names used in the CAN module they are referred to as
 MDL and MDH here.</p>
 <section id="bit-timing">
-<h2>Bit timing<a class="headerlink" href="#bit-timing" title="Permalink to this headline">¶</a></h2>
+<h2>Bit timing<a class="headerlink" href="#bit-timing" title="Permalink to this heading">¶</a></h2>
 <p>The firmware is configured for communication at 1 Mbit/s using a sampling point
 of 86.7%.</p>
 </section>
 <section id="messages-sent-from-the-board">
-<h2>Messages sent from the board<a class="headerlink" href="#messages-sent-from-the-board" title="Permalink to this headline">¶</a></h2>
+<h2>Messages sent from the board<a class="headerlink" href="#messages-sent-from-the-board" title="Permalink to this heading">¶</a></h2>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 6%" />
-<col style="width: 41%" />
-<col style="width: 11%" />
-<col style="width: 41%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>ID</p></th>
 <th class="head"><p>Meaning</p></th>
@@ -189,17 +184,9 @@ things simple, we should not use these IDs for other data, so we don’t have
 to reconfigure the sensors.</p>
 </div>
 <section id="status-message">
-<h3>Status Message<a class="headerlink" href="#status-message" title="Permalink to this headline">¶</a></h3>
+<h3>Status Message<a class="headerlink" href="#status-message" title="Permalink to this heading">¶</a></h3>
 <p>The status message contains one byte of data which is structured as follows:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 11%" />
-<col style="width: 18%" />
-<col style="width: 18%" />
-<col style="width: 17%" />
-<col style="width: 19%" />
-<col style="width: 18%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Bit 5-7</p></th>
 <th class="head"><p>Bit 4</p></th>
@@ -221,12 +208,8 @@ to reconfigure the sensors.</p>
 </table>
 <p>A motor is “ready” when the alignment process is finished.</p>
 <section id="error-codes">
-<h4>Error Codes<a class="headerlink" href="#error-codes" title="Permalink to this headline">¶</a></h4>
+<h4>Error Codes<a class="headerlink" href="#error-codes" title="Permalink to this heading">¶</a></h4>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 11%" />
-<col style="width: 89%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Error Code</p></th>
 <th class="head"><p>Meaning</p></th>
@@ -267,14 +250,8 @@ point.</p>
 </section>
 </section>
 <section id="messages-sent-to-the-board">
-<h2>Messages sent to the board<a class="headerlink" href="#messages-sent-to-the-board" title="Permalink to this headline">¶</a></h2>
+<h2>Messages sent to the board<a class="headerlink" href="#messages-sent-to-the-board" title="Permalink to this heading">¶</a></h2>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 7%" />
-<col style="width: 18%" />
-<col style="width: 32%" />
-<col style="width: 43%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>ID</p></th>
 <th class="head"><p>Name</p></th>
@@ -302,46 +279,6 @@ point.</p>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>0x006</p></td>
-<td><p>CAN_ID_KP</p></td>
-<td><p>Gains for P controller
-<span class="math notranslate nohighlight">\([\frac{A}{mrev}]\)</span></p></td>
-<td><ul class="simple">
-<li><p>MDL: P gain for motor 1</p></li>
-<li><p>MDH: P gain for motor 2</p></li>
-</ul>
-</td>
-</tr>
-<tr class="row-odd"><td><p>0x007</p></td>
-<td><p>CAN_ID_KD</p></td>
-<td><p>Gains for D controller
-<span class="math notranslate nohighlight">\([\frac{A}{kmrev / min}]\)</span></p></td>
-<td><ul class="simple">
-<li><p>MDL: D gain for motor 1</p></li>
-<li><p>MDH: D gain for motor 2</p></li>
-</ul>
-</td>
-</tr>
-<tr class="row-even"><td><p>0x008</p></td>
-<td><p>CAN_ID_POS_REF</p></td>
-<td><p>Reference for P controller
-<span class="math notranslate nohighlight">\([mrev]\)</span></p></td>
-<td><ul class="simple">
-<li><p>MDL: Reference position for motor 1</p></li>
-<li><p>MDH: Reference position for motor 2</p></li>
-</ul>
-</td>
-</tr>
-<tr class="row-odd"><td><p>0x009</p></td>
-<td><p>CAN_ID_VEL_REF</p></td>
-<td><p>Reference for D controller
-<span class="math notranslate nohighlight">\([\frac{kmrev}{min}]\)</span></p></td>
-<td><ul class="simple">
-<li><p>MDL: Reference velocity for motor 1</p></li>
-<li><p>MDH: Reference velocity for motor 2</p></li>
-</ul>
-</td>
-</tr>
 </tbody>
 </table>
 <p><span class="math notranslate nohighlight">\(mrev\)</span> = motor revolutions.  E.g. 0.5 is half a revolution, 1.0 a full revolution, 2.0 two revolutions, etc.</p>
@@ -351,18 +288,11 @@ point.</p>
 convert float to Q24 multiply by 2<sup>24</sup> and round to an integer.</p>
 </div>
 <section id="command-codes">
-<h3>Command Codes<a class="headerlink" href="#command-codes" title="Permalink to this headline">¶</a></h3>
+<h3>Command Codes<a class="headerlink" href="#command-codes" title="Permalink to this heading">¶</a></h3>
 <p>A command message (ID = 0) consists of two parts. The high bytes (MDH) contain a
 code that is associated with a specific parameter (see table below) while the
 lower bytes (MDL) contain the value that is to be assigned to the parameter.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 4%" />
-<col style="width: 30%" />
-<col style="width: 53%" />
-<col style="width: 6%" />
-<col style="width: 6%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Code</p></th>
 <th class="head"><p>Name</p></th>
@@ -444,30 +374,6 @@ lower bytes (MDL) contain the value that is to be assigned to the parameter.</p>
 <td><p>0/1</p></td>
 <td><p>0</p></td>
 </tr>
-<tr class="row-even"><td><p>0x28</p></td>
-<td><p>CAN_CMD_P_CONTROLLER_LIMIT_IQ_MTR1</p></td>
-<td><p>Set the current limit for the P controller of motor 1 [A]</p></td>
-<td><p>IQ24</p></td>
-<td><p>0</p></td>
-</tr>
-<tr class="row-odd"><td><p>0x29</p></td>
-<td><p>CAN_CMD_P_CONTROLLER_LIMIT_IQ_MTR2</p></td>
-<td><p>Set the current limit for the P controller of motor 2 [A]</p></td>
-<td><p>IQ24</p></td>
-<td><p>0</p></td>
-</tr>
-<tr class="row-even"><td><p>0x2A</p></td>
-<td><p>CAN_CMD_D_CONTROLLER_LIMIT_IQ_MTR1</p></td>
-<td><p>Set the current limit for the D controller of motor 1 [A]</p></td>
-<td><p>IQ24</p></td>
-<td><p>0</p></td>
-</tr>
-<tr class="row-odd"><td><p>0x2B</p></td>
-<td><p>CAN_CMD_D_CONTROLLER_LIMIT_IQ_MTR2</p></td>
-<td><p>Set the current limit for the D controller of motor 2 [A]</p></td>
-<td><p>IQ24</p></td>
-<td><p>0</p></td>
-</tr>
 </tbody>
 </table>
 <p>Example: To enable motor 1, set MDH = 2 and MDL = 1.</p>
@@ -477,7 +383,7 @@ enable the system.</p>
 </section>
 </section>
 <section id="can-receive-timeout">
-<h2>CAN Receive Timeout<a class="headerlink" href="#can-receive-timeout" title="Permalink to this headline">¶</a></h2>
+<h2>CAN Receive Timeout<a class="headerlink" href="#can-receive-timeout" title="Permalink to this heading">¶</a></h2>
 <p>The embedded software on the board provides a security feature that disables the
 motors in case the CAN connection is interrupted or the controller on the PC
 exits without properly shutting down the system. This is done by simply checking
@@ -514,7 +420,7 @@ current=0 command and enable motor commands.</p>
       &copy;2021, Max Planck Gesellschaft.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
