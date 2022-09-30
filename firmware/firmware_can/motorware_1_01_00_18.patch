@@ -124,9 +124,15 @@ index 1f50131..9c7117f 100644
 +  GPIO_setHigh(obj->gpioHandle, GPIO_Number_26);
 +  GPIO_setDirection(obj->gpioHandle, GPIO_Number_26, GPIO_Direction_Input);
 diff --git a/sw/modules/hal/boards/boostxldrv8305_revA/f28x/f2806x/src/hal_2mtr.h b/sw/modules/hal/boards/boostxldrv8305_revA/f28x/f2806x/src/hal_2mtr.h
-index c463a3b..aab17f5 100644
+index c463a3b..b3c6064 100644
 --- a/sw/modules/hal/boards/boostxldrv8305_revA/f28x/f2806x/src/hal_2mtr.h
 +++ b/sw/modules/hal/boards/boostxldrv8305_revA/f28x/f2806x/src/hal_2mtr.h
+@@ -123 +123 @@ extern "C" {
+-#define HAL_turnLedOff            HAL_setGpioLow
++#define HAL_turnLedOff            HAL_setGpioHigh
+@@ -128 +128 @@ extern "C" {
+-#define HAL_turnLedOn             HAL_setGpioHigh
++#define HAL_turnLedOn             HAL_setGpioLow
 @@ -643,5 +642,0 @@ static inline void HAL_readAdcDataWithOffsets(HAL_Handle handle,HAL_Handle_mtr h
 -    value = (_iq)ADC_readResult(obj->adcHandle,ADC_ResultNumber_8);
 -    value = _IQ12mpy(value,current_sf);
